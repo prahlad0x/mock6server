@@ -3,6 +3,8 @@ require('dotenv').config()
 const cors = require('cors')
 const { connection } = require('./db')
 const { userRouter } = require('./routes/user.route')
+const { blogRouter } = require('./routes/blog.route')
+const { auth } = require('./middleware/auth')
 
 
 const app =express()
@@ -11,10 +13,12 @@ app.use(express.json())
 app.use(cors())
 
 app.get('/', (req,res)=>{
-    res.send({msg : "welcome"})
+    res.send({msg : "welcome to world of blogs"})
 })
 
-app.use('/users', userRouter)
+app.use('/user', userRouter)
+
+app.use('/blogs',auth, blogRouter)
 
 app.listen(Number(process.env.port), async(req,res)=>{
     try {

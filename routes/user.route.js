@@ -3,23 +3,25 @@ const userRouter = express.Router()
 const bcrypt = require("bcrypt")
 const jwt = require('jsonwebtoken')
 const { UserModel } = require('../models/user.model')
-
+require('dotenv').config()
 
 userRouter.post('/register', async(req, res)=>{
     try {
-        let {email, password} = req.body;
+        let {email, password, username, avatar} = req.body;
+
+        if(!avatar || avatar == ""){
+            avatar = 'https://randomuser.me/api/portraits/men/61.jpg'
+        }
 
         let user = await UserModel.findOne({email})
         if(user) return res.status(401).send({msg : "User Already Registered!", isOk : false})
 
-        const token = jwt.sign({email}, 'tokenkey', {expiresIn : '1d'})
+        const hash =bcrypt.hashSync(password, +process.env.salt)
 
-        const hash =bcrypt.hashSync(password, 6)
-
-        let newUser = new UserModel({email, password : hash})
+        let newUser = new UserModel({username, avatar,email, password : hash})
         await newUser.save()
 
-        return res.status(201).send({msg : "Registration successful", isOk : true, user : newUser, token : token})
+        return res.status(201).send({msg : "Registration successful", isOk : true, user : newUser})
 
     } catch (error) {
         console.log(error)
@@ -40,7 +42,7 @@ userRouter.post('/login', async (req, res)=>{
 
         if(!isPassOk) return res.status(401).send({msg : "Invalid Credientials!", isOk : false})
 
-        const token = jwt.sign({email}, process.env.tokenkey, {expiresIn : '1d'})
+        const token = jwt.sign({email : email}, process.env.tokenkey, {expiresIn : '1d'})
 
         return res.status(201).send({msg: "Login Successful", isOk : true, user : user, token : token})
     
@@ -50,8 +52,5 @@ userRouter.post('/login', async (req, res)=>{
     }
 })
 
-userRouter.get('/logout', async (req, res)=>{
-    res.send({msg : "logout successful"})
-})
 
 module.exports = {userRouter}
