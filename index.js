@@ -3,7 +3,6 @@ require('dotenv').config()
 const cors = require('cors')
 const { connection } = require('./db')
 const { userRouter } = require('./routes/user.route')
-const { appointmentRouter } = require('./routes/appointment')
 
 
 const app =express()
@@ -12,11 +11,10 @@ app.use(express.json())
 app.use(cors())
 
 app.get('/', (req,res)=>{
-    res.send({msg : "welcome to our hospital management system."})
+    res.send({msg : "welcome"})
 })
 
 app.use('/users', userRouter)
-app.use('/appointment', appointmentRouter)
 
 app.listen(Number(process.env.port), async(req,res)=>{
     try {
